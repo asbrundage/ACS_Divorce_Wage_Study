@@ -10,7 +10,7 @@ library(tidyverse)
 library(readxl)
 library(corrplot)
 library(ggthemes)
-library(plotly)
+library(stargazer)
 
 acs1 <- read.csv("C:/Users/asbru/Documents/Emory/Advanced Mangerial Econ & Data Analytics/Assignment 2/Data/2014-american-community-survey/ss14pusa.csv")
 acs2 <- read.csv("C:/Users/asbru/Documents/Emory/Advanced Mangerial Econ & Data Analytics/Assignment 2/Data/2014-american-community-survey/ss14pusb.csv")
@@ -45,7 +45,7 @@ acsmaritalstatus <-
                                  COW == 6 ~ "Self-Employed, Not Incorporated",
                                  COW == 7 ~ "Self-Employed, Incorporated",
                                  COW == 8 ~ "Working without Pay in Family Biz/Farm",
-                                 COW == 9 ~ "Unemployed",)) %>%
+                                 COW == 9 ~ "Unemployed")) %>%
   mutate(education = case_when(SCHL == "bb" ~ 0,
                                SCHL == 01 ~ 0,
                                SCHL == 02 ~ 0,
@@ -125,5 +125,82 @@ BoxPlot2
 
 ```
 
+##Subset Data for Model
 
-mutat
+```{r}
+
+ACS_divorced_married_men <- 
+  acsmaritalstatus %>%
+  filter(sexlabel == "male")
+  
+ACS_divorced_married_women <- 
+  acsmaritalstatus %>%
+  filter(sexlabel == "female")
+
+ACS_divorced <- 
+  acsmaritalstatus %>%
+  filter(marstatus == "divorced")
+  
+ACS_married <- 
+  acsmaritalstatus %>%
+  filter(marstatus == "married")
+  
+  
+
+```
+
+
+##Model
+
+```{r}
+
+#ALL
+LinearModel1 <- lm(WAGP ~ education + exp + expsqd
+                   + MAR
+                   + SEX
+                   + COW
+                   ,data = acsmaritalstatus)
+summary(LinearModel1)
+
+#Only Men
+
+
+LinearModel_Men <- lm(WAGP ~ education + exp + expsqd
+                   + MAR
+                   + COW
+                   ,data = ACS_divorced_married_men)
+#Only Women
+
+
+LinearModel_Women <- lm(WAGP ~ education + exp + expsqd
+                   + MAR
+                   + COW
+                   ,data = ACS_divorced_married_women)
+#Only Divorced
+
+
+LinearModel_Divorced <- lm(WAGP ~ education + exp + expsqd
+                   + SEX
+                   + COW
+                   ,data = ACS_divorced)
+#Only Married
+
+
+LinearModel_Married <- lm(WAGP ~ education + exp + expsqd
+                   + SEX
+                   + COW
+                   ,data = ACS_married)
+
+summary(LinearModel_Men)
+summary(LinearModel_Women)
+summary(LinearModel_Divorced)
+summary(LinearModel_Married)
+
+```
+
+##Stargazer
+
+```{r mylatextable, results = "asis"}
+stargazer(LinearModel_Divorced, type = "latex")
+```
+
