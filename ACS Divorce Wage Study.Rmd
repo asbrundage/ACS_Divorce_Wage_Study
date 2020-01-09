@@ -21,6 +21,18 @@ acsfull <-
 
 ```
 
+```{r}
+
+
+
+
+# acsnew %>%
+#   ungroup(SEX,MAR) %>%
+#   count(SERIALNO)
+
+```
+
+
 ## Wrangle
 
 ```{r}
@@ -31,19 +43,28 @@ acsfull <-
 acsmaritalstatus <-
   acsfull %>%
   filter(MAR %in% c(1,3)) %>%
-  select(c(AGEP,MAR,WAGP,COW,RAC1P,SEX,SCHL,NAICSP,FMARHDP,MARHD,MARHYP)) %>%
+  select(c(AGEP,MAR,WAGP,COW,RAC1P,HISP,SEX,SCHL,NAICSP,FMARHDP,MARHD,MARHYP,MARHD)) %>%
   mutate(sexlabel = case_when(SEX == 1 ~ "male",
                               SEX == 2 ~ "female")) %>%
   mutate(marstatus = case_when(MAR == 1 ~ "married",
                                MAR == 3 ~ "divorced")) %>%
+  mutate(race = case_when(RAC1P == 1 ~ "White",
+                          RAC1P == 2 ~ "black",
+                          RAC1P == 3 ~ "native",
+                          RAC1P == 4 ~ "native",
+                          RAC1P == 5 ~ "native",
+                          RAC1P == 6 ~ "asian",
+                          RAC1P == 7 ~ "hawaiian",
+                          RAC1P == 8 ~ "other",
+                          RAC1P == 9 ~ "mixed")) %>%
   mutate(classstatus = case_when(COW == "b" ~ "N/A",
-                                 COW == 1 ~ "Employee of Private For-Profit",
-                                 COW == 2 ~ "Employee of Private Not-For-Profit",
-                                 COW == 3 ~ "Employee of Local Govt",
-                                 COW == 4 ~ "Employee of State Govt",
-                                 COW == 5 ~ "Employee of Federal Govt",
-                                 COW == 6 ~ "Self-Employed, Not Incorporated",
-                                 COW == 7 ~ "Self-Employed, Incorporated",
+                                 COW == 1 ~ "For-Profit",
+                                 COW == 2 ~ "Non-Profit",
+                                 COW == 3 ~ "Govt",
+                                 COW == 4 ~ "Govt",
+                                 COW == 5 ~ "Govt",
+                                 COW == 6 ~ "Self-Employed",
+                                 COW == 7 ~ "Self-Employed",
                                  COW == 8 ~ "Working without Pay in Family Biz/Farm",
                                  COW == 9 ~ "Unemployed")) %>%
   mutate(education = case_when(SCHL == "bb" ~ 0,
@@ -76,10 +97,16 @@ acsmaritalstatus <-
   mutate(lnwages = log(WAGP))
 
 # smallsetb <-
-#   acs2 %>%
-#   filter(SERIALNO == 367)
-
+#   acsmaritalstatus %>%
+#   filter(marstatus == "divorced")
+# 
 # write.csv(smallsetb, file = "C:/Users/asbru/Documents/Emory/Advanced Mangerial Econ & Data Analytics/Assignment 2/smallsetb.csv")
+#   
+#   
+#   acsnew <- 
+#   acsmaritalstatus %>%
+#   group_by(SEX,MAR) %>%
+#   summarize(avewagp = mean(WAGP)) 
 
 ```
 
@@ -89,7 +116,7 @@ acsmaritalstatus <-
 
 
 correlation <- 
-  acs1 %>%
+  acsmaritalstatus %>%
   select(c(JWTR,LANX,MAR,SCHL))
 M <- 
   cor(correlation)
@@ -110,33 +137,21 @@ ggplotly(hist1)
 ```
 
 
-##Box Plots
+##Model 1
 
 ```{r}
 
-
-
-
-
-BoxPlot1 <- 
-  acsmaritalstatus %>%
-  ggplot(aes(MAR, WAGP)) +
-  geom_boxplot(aes(group=MAR, color=MAR)) +
-  facet_wrap(~SEX) +
-  stat_compare_means(label = "p.format")
-
-BoxPlot1
-
-#Yes there appears to be a statistically significant difference in the means between both married/divorced males and females.
-
-BoxPlot2 <- 
-  acsmaritalstatus %>%
-  ggplot(aes(SEX, WAGP)) +
-  geom_boxplot(aes(group=SEX, color=SEX)) +
-  facet_wrap(~MAR) +
-  stat_compare_means(label = "p.format")
-BoxPlot2
-
+LinearModel1 <- lm(WAGP ~ education 
+                   + exp 
+                   + expsqd
+                   + marstatus
+                   + classstatus
+                   + sexlabel
+                   + MARHD
+                   + race
+                   # + COW
+                   ,data = acsmaritalstatus)
+summary(LinearModel1)
 
 
 ```
@@ -171,40 +186,65 @@ ACS_married <-
 ```{r}
 
 #ALL
-LinearModel1 <- lm(WAGP ~ education + exp + expsqd
-                   + MAR
-                   + SEX
-                   + COW
+LinearModel1 <- lm(WAGP ~ education 
+                   + exp 
+                   + expsqd
+                   + marstatus
+                   + classstatus
+                   + sexlabel
+                   + MARHD
+                   + race
+                   # + COW
                    ,data = acsmaritalstatus)
 summary(LinearModel1)
 
 #Only Men
 
 
-LinearModel_Men <- lm(WAGP ~ education + exp + expsqd
-                   + MAR
-                   + COW
+LinearModel_Men <- lm(WAGP ~ education 
+                   + exp 
+                   + expsqd
+                   + marstatus
+                   + classstatus
+                   # + sexlabel
+                   + MARHD
+                   + race
                    ,data = ACS_divorced_married_men)
 #Only Women
 
 
-LinearModel_Women <- lm(WAGP ~ education + exp + expsqd
-                   + MAR
-                   + COW
+LinearModel_Women <- lm(WAGP ~ education 
+                   + exp 
+                   + expsqd
+                   + marstatus
+                   + classstatus
+                   # + sexlabel
+                   + MARHD
+                   + race
                    ,data = ACS_divorced_married_women)
 #Only Divorced
 
 
-LinearModel_Divorced <- lm(WAGP ~ education + exp + expsqd
-                   + SEX
-                   + COW
+LinearModel_Divorced <- lm(WAGP ~ education 
+                   + exp 
+                   + expsqd
+                   # + marstatus
+                   + classstatus
+                   + sexlabel
+                   + MARHD
+                   + race
                    ,data = ACS_divorced)
 #Only Married
 
 
-LinearModel_Married <- lm(WAGP ~ education + exp + expsqd
-                   + SEX
-                   + COW
+LinearModel_Married <- lm(WAGP ~ education 
+                   + exp 
+                   + expsqd
+                   # + marstatus
+                   + classstatus
+                   + sexlabel
+                   + MARHD
+                   + race
                    ,data = ACS_married)
 
 summary(LinearModel_Men)
