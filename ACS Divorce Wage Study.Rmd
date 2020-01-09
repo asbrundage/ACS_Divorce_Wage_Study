@@ -49,27 +49,27 @@ acsmaritalstatus <-
   mutate(education = case_when(SCHL == "bb" ~ 0,
                                SCHL == 01 ~ 0,
                                SCHL == 02 ~ 0,
-                               SCHL == 03 ~ 1,
-                               SCHL == 04 ~ 2,
-                               SCHL == 05 ~ 3,
-                               SCHL == 06 ~ 4,
-                               SCHL == 07 ~ 5,
-                               SCHL == 08 ~ 6,
-                               SCHL == 09 ~ 7,
-                               SCHL == 10 ~ 8,
-                               SCHL == 11 ~ 9,
-                               SCHL == 12 ~ 10,
-                               SCHL == 13 ~ 11,
-                               SCHL == 14 ~ 12,
-                               SCHL == 15 ~ 13,
-                               SCHL == 16 ~ 13,
-                               SCHL == 17 ~ 13,
-                               SCHL == 18 ~ 13,
+                               SCHL == 03 ~ 0,
+                               SCHL == 04 ~ 1,
+                               SCHL == 05 ~ 2,
+                               SCHL == 06 ~ 3,
+                               SCHL == 07 ~ 4,
+                               SCHL == 08 ~ 5,
+                               SCHL == 09 ~ 6,
+                               SCHL == 10 ~ 7,
+                               SCHL == 11 ~ 8,
+                               SCHL == 12 ~ 9,
+                               SCHL == 13 ~ 10,
+                               SCHL == 14 ~ 11,
+                               SCHL == 15 ~ 11.5,
+                               SCHL == 16 ~ 12,
+                               SCHL == 17 ~ 11.75,
+                               SCHL == 18 ~ 12.5,
                                SCHL == 19 ~ 13,
                                SCHL == 20 ~ 14,
-                               SCHL == 21 ~ 17,
-                               SCHL == 22 ~ 19,
-                               SCHL == 23 ~ 19,
+                               SCHL == 21 ~ 16.5,
+                               SCHL == 22 ~ 18,
+                               SCHL == 23 ~ 19.5,
                                SCHL == 24 ~ 23)) %>%
   mutate(exp = AGEP - education - 5) %>%
   mutate(expsqd = exp^2) %>%
@@ -97,9 +97,25 @@ M <-
 corrplot(M, method = "shade", number.cex = 1, tl.cex = 1, title = "All Positions", mar=c(0,0,1,0))
 ```
 
+##Histograms
+
+
+```{r}
+hist1<-
+  acsmaritalstatus %>%
+  ggplot( aes(x=education)) +
+  geom_histogram(bins = 24)
+ggplotly(hist1)
+
+```
+
+
 ##Box Plots
 
 ```{r}
+
+
+
 
 
 BoxPlot1 <- 
